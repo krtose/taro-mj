@@ -11,6 +11,9 @@ dependencies:
   '@babel/runtime':
     specifier: ^7.7.7
     version: 7.7.7
+  '@nutui/icons-react-taro':
+    specifier: ^0.0.4
+    version: 0.0.4
   '@nutui/nutui-react-taro':
     specifier: ^2.0.15
     version: 2.0.15(react-dom@18.0.0)(react@18.0.0)
@@ -2833,6 +2836,10 @@ packages:
     resolution: {integrity: sha512-uHUaVnh9yfkUdbYLEfoxArFedP7pti+sOrnBTDknemsJKqK/jnQ9xnIKpO2l+1CgGWpbAkipQVBDUM7CXKuWaA==}
     dependencies:
       classnames: 2.3.2
+    dev: false
+
+  /@nutui/icons-react-taro@0.0.4:
+    resolution: {integrity: sha512-29XhXpYb1x/lsWGKudho0sKTQZi1B9bbMDo70UxfxSD34rNiHIthHJeLcKc++aLMxu88cVPWD+qwt4AQQf8lBw==}
     dev: false
 
   /@nutui/nutui-react-taro@2.0.15(react-dom@18.0.0)(react@18.0.0):

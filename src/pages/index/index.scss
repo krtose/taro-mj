@@ -1,0 +1,66 @@
+.page-home {
+  --nutui-uploader-picture-width: 70vw;
+  --nutui-uploader-picture-height: 70vw;
+  text-align:center;
+  background-image: url("../../assets/bg.jpg");
+  background-size: cover;
+  overflow: auto;
+  height: 100%;
+  padding-bottom: 20px;
+  .nut-uploader {
+    display: block;
+    margin: 20px auto 20px;
+    .nutui-iconfont.nut-icon.nut-icon-photograph {
+      color: white;
+    }
+    .nut-uploader__preview.picture {
+      margin: 0;
+      .nut-uploader__preview-img {
+        margin: 0 auto;
+      }
+    }
+    .nut-uploader__upload.picture {
+      margin: 0 auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .nut-uploader__preview-img__c {
+      display: flex;
+      align-items: center;
+    }
+    .taro-img__mode-aspectfit {
+      width: 100%;
+    }
+  }
+  .nut-button {
+    margin-bottom: 20px;
+  }
+  .nut-image {
+    min-height: 70vw;
+  }
+  .ad {
+    position: fixed;
+    top:40px;
+    bottom:20px;
+    left:20px;
+    right:20px;
+    background-color: aqua;
+    color: white;
+    border-radius: 6px;
+    .close-icon {
+      position: absolute;
+      right: -9px;
+      top: -9px;
+    }
+  }
+  .result-image {
+    margin: 0 auto;
+    width: 70vw;
+    background-color: rgba(0,0,0,0.5);
+    .nut-img-loading {
+      background: none;
+    }
+    .nutui-iconfont.nut-icon.nut-icon-image {
+      color: white;
+    }
+  }
+}

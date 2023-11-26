@@ -1,169 +1,6 @@
-import React, {useEffect, useState} from "react";
-import {Button, Image, Notify, Uploader} from '@nutui/nutui-react-taro';
-import {IconFont} from '@nutui/icons-react-taro'
-import {Ad, View} from '@tarojs/components'
 import Taro from "@tarojs/taro";
-import './index.scss'
 
-const DOMAIN = 'ai2.credit99.cn:808'
-const PROTOCOL = 'https://'
-
-
-const Index = () => {
-    // 提示
-    const [showNotify, setShowNotify] = useState(false)
-    const [notifyInfo, setNotifyInfo] = useState({
-        message: '',
-        type: 'primary',
-    })
-    const notify = (message, type='primary') => {
-        setNotifyInfo({
-            message,
-            type
-        })
-        setShowNotify(true)
-    }
-    // 上传图片
-    const uploadUrl = PROTOCOL + DOMAIN + '/upload/image'
-    const UPLOAD_STATUS = {
-        default: 'default',
-        loading: 'loading',
-        success: 'uploadSuccess',
-        failed: 'uploadFailed'
-    }
-    const [uploadStatus, setUploadStatus] = useState(UPLOAD_STATUS.default)
-    const [uploadResult, setUploadResult] = useState({})
-    const handleUploadSuccess = ({responseText}) => {
-        try {
-            setUploadStatus(UPLOAD_STATUS.success)
-            setUploadResult(JSON.parse(responseText.data))
-        }catch{
-            setUploadResult(responseText.data)
-        }
-    }
-    const handleUploadFailed = () => {
-        setUploadStatus(UPLOAD_STATUS.failed)
-    }
-    const handleDeleteImage = () => {
-        setUploadStatus(UPLOAD_STATUS.default)
-    }
-    // 广告
-    const AD_STATUS = {
-        default: 'default',
-        visible: 'visible',
-        closeable: 'closeable' // 显示关闭广告按钮
-    }
-    const [adStatus, setAdStatus] = useState(AD_STATUS.default)
-    // 生成图片
-    const GENERATE_STATUS = {
-        default: 'default',
-        loading: 'loading',
-        success: 'success',
-        failed: 'failed'
-    }
-    const [generateStatus, setGenerateStatus] = useState(GENERATE_STATUS.default)
-    const [clientId, setClientId] = useState(null)
-    const [result, setResult] = useState({
-        // img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTp3dixUyncHWWwFb93xc3ap0AMfwFEdxuLYQ&usqp=CAU'
-    })
-    const startGenerate = () => {
-        return generate('carved', clientId , uploadResult.name)
-    }
-    // ws
-    useEffect(() => {
-        createWebSocket((event) => {
-            try {
-                if (event.data instanceof ArrayBuffer) {
-                    const view = new DataView(event.data);
-                    const eventType = view.getUint32(0);
-                    const buffer = event.data.slice(4);
-                    switch (eventType) {
-                        case 1:
-                            const view2 = new DataView(event.data);
-                            const imageType = view2.getUint32(0)
-                            let imageMime
-                            switch (imageType) {
-                                case 1:
-                                default:
-                                    imageMime = "image/jpeg";
-                                    break;
-                                case 2:
-                                    imageMime = "image/png"
-                            }``
-                            const imageBlob = new Blob([buffer.slice(4)], { type: imageMime });
-                            setResult({
-                                ...result,
-                                img: URL.createObjectURL(imageBlob)
-                            })
-                            break;
-                    }
-                }
-                else {
-                    const msg = JSON.parse(event.data);
-                    switch (msg.type) {
-                        case "status":
-                            if (msg.data.sid) {
-                                setClientId(msg.data.sid)
-                            }
-                    }
-                }
-            } catch (error) {
-                console.warn("Unhandled message:", event.data, error);
-            }
-        })
-    }, []);
-    const handleGenerateClick = () => {
-        if(uploadStatus === UPLOAD_STATUS.default) {
-            notify('请先上传图片')
-        }else if(uploadStatus === UPLOAD_STATUS.failed) {
-            notify('请重新上传图片')
-        } else if(uploadStatus === UPLOAD_STATUS.success) {
-            setGenerateStatus(GENERATE_STATUS.loading)
-            setAdStatus(AD_STATUS.visible)
-            startGenerate()
-                .then((result) => {
-                    setResult(result || {})
-                    setGenerateStatus(GENERATE_STATUS.success)
-                })
-                .catch(() => setGenerateStatus(GENERATE_STATUS.failed))
-                .finally(() => {
-                    setAdStatus(AD_STATUS.closeable)
-                })
-        }
-    }
-
-    return (
-            <View className='page-home'>
-                <Notify
-                    visible={showNotify}
-                    type={notifyInfo.type}
-                    onClose={() => {
-                        setShowNotify(false)
-                    }}
-                >{notifyInfo.message}</Notify>
-                <Uploader
-                    name='image'
-                    url={uploadUrl}
-                    maxCount="1"
-                    onFailure={handleUploadFailed}
-                    onSuccess={handleUploadSuccess}
-                    onDelete={handleDeleteImage}
-                />
-                <Button type="primary" onClick={handleGenerateClick}>生成</Button>
-                <Image className='result-image' src={result.img}  />
-                {/*广告*/}
-                { adStatus === AD_STATUS.default ? null : <View class='ad'>
-                    { adStatus === AD_STATUS.closeable ? <IconFont onClick={() => setAdStatus(AD_STATUS.default)} size='18px' color='red' className='close-icon' name='close' /> : null }
-                    <Ad unitId='111'></Ad>
-                </View> }
-
-            </View>
-    )
-}
-export default Index;
-
-
-// 开始生成图片
+const BASE_URL = 'https://ai2.credit99.cn:808'
 export async function generate(tog, clientId, imageName){
     try {
         let params
@@ -206,7 +43,7 @@ export async function generate(tog, clientId, imageName){
         params.prompt["3"]["inputs"]["seed"] = generateRandom16DigitNumber();
         // 发送POST请求到服务器
         return await Taro.request({
-            url: PROTOCOL + DOMAIN + '/prompt',
+            url: BASE_URL + '/prompt',
             method: 'POST',
             data: params,
         })
@@ -222,21 +59,28 @@ function generateRandom16DigitNumber() {
 }
 
 
-// 建立WS连接
-export function createWebSocket(onMessage, clientId) {
-    const existingSession = clientId ? '?clientId=' + clientId : ''
+
+//创建websocket
+export async function createWebSocker() {
     Taro.connectSocket({
-        url: `ws${PROTOCOL.indexOf('https') !== -1 ? 's' : ''}://${DOMAIN}/ws${existingSession}`,
+        url: 'ws://echo.websocket.org/echo',
         success: function () {
             console.log('connect success')
         }
     }).then(task => {
-        task.onMessage(function (event) {
-            onMessage(event)
+        task.onOpen(function () {
+            console.log('onOpen')
+            task.send({ data: 'xxx' })
+        })
+        task.onMessage(function (msg) {
+            console.log('onMessage: ', msg)
+            task.close()
+        })
+        task.onError(function () {
+            console.log('onError')
+        })
+        task.onClose(function (e) {
+            console.log('onClose: ', e)
         })
     })
 }
-
-
-
-
