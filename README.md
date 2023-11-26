@@ -1,8 +1,12 @@
 
 
 # 环境
-node v16.9.0
+node v16.9.0<br/>
 pnpm 8.6.6
+
+# 运行步骤
+pnpm install
+pnpm dev:weapp
 
 # 打包
 1. build和dev的区别是dev有--watch，会监听代码改动
@@ -29,6 +33,10 @@ pnpm 8.6.6
     "dev:quickapp": "npm run build:quickapp -- --watch"
 ```
 
+
+# 广告
+AD需要在小程序后台配置unitID
+https://developers.weixin.qq.com/miniprogram/dev/component/ad.html
 
 # 状态表
 |  | 原图未上传 | 原图上传中 | 原图上传成功 | 原图上传失败 |
