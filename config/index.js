@@ -24,6 +24,9 @@ const config = {
     type: 'webpack5',
     prebundle: { enable: false }
   },
+  terser: {
+    enable: false,
+  },
   mini: {
     postcss: {
       pxtransform: {
