@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
-import {Button, Image, Notify, Uploader} from '@nutui/nutui-react-taro';
+import {Button, Notify, Uploader, Loading, Cell} from '@nutui/nutui-react-taro';
 import {IconFont} from '@nutui/icons-react-taro'
-import {Ad, View} from '@tarojs/components'
+import {Ad, View, Image, Text} from '@tarojs/components'
 import Taro from "@tarojs/taro";
 import './index.scss'
 
@@ -105,6 +105,15 @@ const Index = () => {
                             if (msg.data.sid) {
                                 setClientId(msg.data.sid)
                             }
+                            break;
+                        case "executed":
+                            const output = msg.data.output
+                            if(output && output.images && output.images[0]) {
+                                setResult(output.images[0])
+                                // 直接发送图片请求可能拿不到图片，缓1S
+                                setTimeout(() => setGenerateStatus(GENERATE_STATUS.success), 5000)
+                            }
+
                     }
                 }
             } catch (error) {
@@ -123,7 +132,7 @@ const Index = () => {
             startGenerate()
                 .then((result) => {
                     setResult(result || {})
-                    setGenerateStatus(GENERATE_STATUS.success)
+
                 })
                 .catch(() => setGenerateStatus(GENERATE_STATUS.failed))
                 .finally(() => {
@@ -150,7 +159,12 @@ const Index = () => {
                     onDelete={handleDeleteImage}
                 />
                 <Button type="primary" onClick={handleGenerateClick}>生成</Button>
-                <Image className='result-image' src={result.img}  />
+                { generateStatus === GENERATE_STATUS.success ?
+                    <Image className='result-image' src={PROTOCOL + DOMAIN + `/view?filename=${result.filename}&subfolder=${result.subfolder}&type=${result.type}&t=${new Date().valueOf()}`}  />
+                    : generateStatus === GENERATE_STATUS.loading ?
+                        <Cell>
+                            <Loading type='spinner'>图片生成中</Loading>
+                        </Cell> : <Image className='result-image' /> }
                 {/*广告*/}
                 { adStatus === AD_STATUS.default ? null : <View class='ad'>
                     { adStatus === AD_STATUS.closeable ? <IconFont onClick={() => setAdStatus(AD_STATUS.default)} size='18px' color='red' className='close-icon' name='close' /> : null }

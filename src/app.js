@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useDidShow, useDidHide } from '@tarojs/taro'
+import Taro, { useDidShow, useDidHide } from '@tarojs/taro'
 // 全局样式
 import './app.scss'
 
@@ -17,3 +17,4 @@ function App(props) {
 }
 
 export default App
+

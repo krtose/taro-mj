@@ -2,8 +2,7 @@
   --nutui-uploader-picture-width: 70vw;
   --nutui-uploader-picture-height: 70vw;
   text-align:center;
-  background-image: url("../../assets/bg.jpg");
-  background-size: cover;
+
   overflow: auto;
   height: 100%;
   padding-bottom: 20px;
@@ -56,6 +55,7 @@
     margin: 0 auto;
     width: 70vw;
     background-color: rgba(0,0,0,0.5);
+    display: block;
     .nut-img-loading {
       background: none;
     }
@@ -63,4 +63,8 @@
       color: white;
     }
   }
+}
+page {
+  background-image: url("../../assets/bg.jpg");
+  background-size: cover;
 }

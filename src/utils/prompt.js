@@ -61,26 +61,82 @@ function generateRandom16DigitNumber() {
 
 
 //创建websocket
-export async function createWebSocker() {
+export async function createWebSocket() {
+    let existingSession = window.name;
+    if (existingSession) {
+        existingSession = "?clientId=" + existingSession;
+    }
     Taro.connectSocket({
-        url: 'ws://echo.websocket.org/echo',
+        url: `ws${window.location.protocol === "https:" ? "s" : ""}://${BASE_URL}/ws${existingSession}`,
         success: function () {
             console.log('connect success')
         }
     }).then(task => {
-        task.onOpen(function () {
-            console.log('onOpen')
-            task.send({ data: 'xxx' })
-        })
-        task.onMessage(function (msg) {
-            console.log('onMessage: ', msg)
-            task.close()
-        })
-        task.onError(function () {
-            console.log('onError')
-        })
-        task.onClose(function (e) {
-            console.log('onClose: ', e)
+        task.onMessage(function (event) {
+            try {
+                if (event.data instanceof ArrayBuffer) {
+                    const view = new DataView(event.data);
+                    const eventType = view.getUint32(0);
+                    const buffer = event.data.slice(4);
+                    switch (eventType) {
+                        case 1:
+                            const view2 = new DataView(event.data);
+                            const imageType = view2.getUint32(0)
+                            let imageMime
+                            switch (imageType) {
+                                case 1:
+                                default:
+                                    imageMime = "image/jpeg";
+                                    break;
+                                case 2:
+                                    imageMime = "image/png"
+                            }``
+                            const imageBlob = new Blob([buffer.slice(4)], { type: imageMime });
+                            this.dispatchEvent(new CustomEvent("b_preview", { detail: imageBlob }));
+                            break;
+                        default:
+                            throw new Error(`Unknown binary websocket message of type ${eventType}`);
+                    }
+                }
+                else {
+                    const msg = JSON.parse(event.data);
+                    switch (msg.type) {
+                        case "status":
+                            if (msg.data.sid) {
+                                this.clientId = msg.data.sid;
+                                window.name = this.clientId;
+                            }
+                            this.dispatchEvent(new CustomEvent("status", { detail: msg.data.status }));
+                            break;
+                        case "progress":
+                            this.dispatchEvent(new CustomEvent("progress", { detail: msg.data }));
+                            break;
+                        case "executing":
+                            this.dispatchEvent(new CustomEvent("executing", { detail: msg.data.node }));
+                            break;
+                        case "executed":
+                            this.dispatchEvent(new CustomEvent("executed", { detail: msg.data }));
+                            break;
+                        case "execution_start":
+                            this.dispatchEvent(new CustomEvent("execution_start", { detail: msg.data }));
+                            break;
+                        case "execution_error":
+                            this.dispatchEvent(new CustomEvent("execution_error", { detail: msg.data }));
+                            break;
+                        case "execution_cached":
+                            this.dispatchEvent(new CustomEvent("execution_cached", { detail: msg.data }));
+                            break;
+                        default:
+                            if (this.#registered.has(msg.type)) {
+                                this.dispatchEvent(new CustomEvent(msg.type, { detail: msg.data }));
+                            } else {
+                                throw new Error(`Unknown message type ${msg.type}`);
+                            }
+                    }
+                }
+            } catch (error) {
+                console.warn("Unhandled message:", event.data, error);
+            }
         })
     })
 }
